@@ -1,7 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="11134" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="B8D-0N-5wS">
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" initialViewController="wAH-uA-13n">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="11134"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="16097"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
         <!--Application-->
@@ -673,7 +674,7 @@
                         <outlet property="delegate" destination="Voe-Tx-rLC" id="PrD-fu-P6m"/>
                     </connections>
                 </application>
-                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModuleProvider="target"/>
+                <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="ScreenShareDemo" customModuleProvider="target"/>
                 <customObject id="YLy-65-1bz" customClass="NSFontManager"/>
                 <customObject id="Ady-hI-5gd" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
@@ -698,20 +699,82 @@
                 </windowController>
                 <customObject id="Oky-zY-oP4" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="250"/>
+            <point key="canvasLocation" x="21" y="238"/>
         </scene>
         <!--View Controller-->
         <scene sceneID="hIz-AP-VOD">
             <objects>
-                <viewController id="XfG-lQ-9wD" customClass="ViewController" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="XfG-lQ-9wD" customClass="ViewController" customModule="ScreenShareDemo" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" id="m2S-Jp-Qdl">
                         <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="I51-88-EO4" customClass="DbyPreviewVideoView">
+                                <rect key="frame" x="10" y="10" width="460" height="250"/>
+                            </customView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstItem="I51-88-EO4" firstAttribute="leading" secondItem="m2S-Jp-Qdl" secondAttribute="leading" constant="10" id="Zb9-Yx-c0D"/>
+                            <constraint firstAttribute="bottom" secondItem="I51-88-EO4" secondAttribute="bottom" constant="10" id="bq2-lq-BOT"/>
+                            <constraint firstItem="I51-88-EO4" firstAttribute="top" secondItem="m2S-Jp-Qdl" secondAttribute="top" constant="10" id="yQ3-0x-sqm"/>
+                            <constraint firstAttribute="trailing" secondItem="I51-88-EO4" secondAttribute="trailing" constant="10" id="zQw-cd-hxg"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="videoView" destination="I51-88-EO4" id="zjG-iQ-7WS"/>
+                    </connections>
                 </viewController>
                 <customObject id="rPt-NT-nkU" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="75" y="655"/>
+            <point key="canvasLocation" x="-122" y="745"/>
+        </scene>
+        <!--Window Controller-->
+        <scene sceneID="i2e-Yn-eHe">
+            <objects>
+                <windowController id="wAH-uA-13n" sceneMemberID="viewController">
+                    <window key="window" title="Window" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" frameAutosaveName="" animationBehavior="default" id="jbp-bj-esJ">
+                        <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+                        <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+                        <rect key="contentRect" x="-1626" y="313" width="480" height="270"/>
+                        <rect key="screenRect" x="-1920" y="0.0" width="1920" height="1057"/>
+                        <connections>
+                            <outlet property="delegate" destination="wAH-uA-13n" id="RUx-LQ-T37"/>
+                        </connections>
+                    </window>
+                    <connections>
+                        <segue destination="IYF-mD-sIE" kind="relationship" relationship="window.shadowedContentViewController" id="Mkc-3T-TU8"/>
+                    </connections>
+                </windowController>
+                <customObject id="iuh-ST-8Ez" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="615" y="191"/>
+        </scene>
+        <!--Dby Window Capture Controller-->
+        <scene sceneID="7Yh-tZ-jNP">
+            <objects>
+                <viewController id="IYF-mD-sIE" customClass="DbyWindowCaptureController" sceneMemberID="viewController">
+                    <view key="view" id="2Y0-Cu-sOV">
+                        <rect key="frame" x="0.0" y="0.0" width="480" height="270"/>
+                        <autoresizingMask key="autoresizingMask"/>
+                        <subviews>
+                            <customView translatesAutoresizingMaskIntoConstraints="NO" id="Phc-wJ-S78" customClass="DbyBufferVideoView">
+                                <rect key="frame" x="10" y="10" width="460" height="250"/>
+                            </customView>
+                        </subviews>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="Phc-wJ-S78" secondAttribute="trailing" constant="10" id="T5F-lt-Wpy"/>
+                            <constraint firstItem="Phc-wJ-S78" firstAttribute="top" secondItem="2Y0-Cu-sOV" secondAttribute="top" constant="10" id="e9f-w9-TAi"/>
+                            <constraint firstItem="Phc-wJ-S78" firstAttribute="leading" secondItem="2Y0-Cu-sOV" secondAttribute="leading" constant="10" id="xzA-V5-f07"/>
+                            <constraint firstAttribute="bottom" secondItem="Phc-wJ-S78" secondAttribute="bottom" constant="10" id="zRH-2T-xPH"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="videoView" destination="Phc-wJ-S78" id="csf-Bl-utf"/>
+                    </connections>
+                </viewController>
+                <customObject id="3lt-H9-8L5" userLabel="First Responder" customClass="NSResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="615" y="624"/>
         </scene>
     </scenes>
 </document>
