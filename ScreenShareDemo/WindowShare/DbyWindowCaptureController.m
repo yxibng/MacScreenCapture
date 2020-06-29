@@ -33,7 +33,7 @@
     [super viewDidLoad];
     _taskQueue = dispatch_queue_create("queue", DISPATCH_QUEUE_SERIAL);
     _windowID = kCGNullWindowID;
-    _windowID = 47678;
+    _windowID = 52439;
     [self startTimer];
 }
 
@@ -75,13 +75,7 @@
 {
     
     CFArrayRef windowList = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, self.windowID);
-    NSArray *array = (__bridge NSArray*)windowList;
-    
-    for (id window in array) {
-        NSLog(@"%@",window);
-    }
-    
-    CFIndex count = CFGetRetainCount(windowList);
+    CFIndex count = CFArrayGetCount(windowList);
     if (count == 0) {
         CFRelease(windowList);
         return;
@@ -92,9 +86,10 @@
     
     CGRect rect = CGRectNull;
     bool ret = CGRectMakeWithDictionaryRepresentation(boundsInfo, &rect);
-    NSLog(@"ret = %d ,x = %f, y = %f, width = %f, height = %f", ret, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height );
-    CFRetain(windowList);
-    
+    CFRelease(windowList);
+    if (!ret) {
+        return;
+    }
     //取得窗口快照
     CGImageRef windowImage = CGWindowListCreateImage(rect, kCGWindowListOptionIncludingWindow | kCGWindowListExcludeDesktopElements, self.windowID, kCGWindowImageNominalResolution);
     if (!windowImage) {
@@ -102,7 +97,16 @@
         return;
     }
     
-    NSLog(@"window image = %@",windowImage);
+//    NSImage * cursor = [NSCursor currentCursor].image;
+//
+//    NSPoint point = NSEvent.mouseLocation;
+//
+//
+//
+//
+//
+//
+//    NSLog(@"window image = %@, rect = %@",windowImage, NSStringFromRect(rect));
 
     
     //追加光标， 参考 https://www.coder.work/article/1297008
@@ -112,6 +116,9 @@
         return;
     }
 
+    
+    
+    
     //做裁切
     CGImageRef croppedImage = CGImageCreateWithImageInRect(imagWithCursor, CGRectInfinite);
     CFRelease(imagWithCursor);
@@ -267,6 +274,25 @@ void _CVPixelBufferReleaseBytesCallback(void *releaseRefCon, const void *baseAdd
     
 }
 
+CGImageRef CreateScaledCGImage(CGImageRef image, int width, int height) {
+  // Create context, keeping original image properties.
+  CGColorSpaceRef colorspace = CGImageGetColorSpace(image);
+  CGContextRef context = CGBitmapContextCreate(NULL,
+                                               width,
+                                               height,
+                                               CGImageGetBitsPerComponent(image),
+                                               width * sizeof(uint32_t),
+                                               colorspace,
+                                               CGImageGetBitmapInfo(image));
+  if (!context) return nil;
+  // Draw image to context, resizing it.
+  CGContextDrawImage(context, CGRectMake(0, 0, width, height), image);
+  // Extract resulting image from context.
+  CGImageRef imgRef = CGBitmapContextCreateImage(context);
+  CGContextRelease(context);
+  return imgRef;
+}
+
 
 //追加光标， 参考 https://www.coder.work/article/1297008
 -(CGImageRef)appendMouseCursor:(CGImageRef)pSourceImage sourceImageRect:(CGRect)imageRect {
@@ -278,17 +304,36 @@ void _CVPixelBufferReleaseBytesCallback(void *releaseRefCon, const void *baseAdd
         return NULL;
     }
     
-    NSPoint mouseLoc = [NSEvent mouseLocation]; //get cur
-    if (!CGRectContainsPoint(imageRect, mouseLoc)) {
+    CGEventRef event = CGEventCreate(NULL);
+    CGPoint mouseLoc = CGEventGetLocation(event);
+    CFRelease(event);
+    
+
+    // get the mouse image
+    NSImage *overlay = [[NSCursor currentSystemCursor] image];
+    
+    CGImageRef overlayImage = [overlay CGImageForProposedRect:NULL
+                                                      context:nil hints:nil];
+    
+    if (CGImageGetWidth(overlayImage) != (size_t)overlay.size.width) {
+        NSLog(@"should scale");
+    }
+    
+    CGFloat y = NSMaxY(NSScreen.screens.firstObject.frame) - mouseLoc.y;
+    CGRect mouseRect = CGRectMake(mouseLoc.x, y, overlay.size.width, overlay.size.height);
+    
+    if (!CGRectContainsPoint(imageRect, mouseRect.origin)) {
         CFRetain(pSourceImage);
         return pSourceImage;
     }
-    // get the mouse image
-    NSImage *overlay = [[NSCursor arrowCursor] image];
     
-    CGPoint convertedPoint = CGPointMake(mouseLoc.x - imageRect.origin.x, mouseLoc.y - imageRect.origin.y - overlay.size.height);
+    CGPoint convertedPoint = CGPointMake(mouseRect.origin.x - imageRect.origin.x, mouseRect.origin.y - imageRect.origin.y);
 
     CGRect cursorRect = CGRectMake(convertedPoint.x, convertedPoint.y, overlay.size.width, overlay.size.height);
+    
+    NSLog(@"mouseloc = %@", NSStringFromPoint(mouseLoc));
+    NSLog(@"imageRect = %@", NSStringFromRect(imageRect));
+    NSLog(@"cursorRect = %@", NSStringFromRect(cursorRect));
     
     size_t height = CGImageGetHeight(pSourceImage);
     size_t width =  CGImageGetWidth(pSourceImage);
@@ -307,8 +352,9 @@ void _CVPixelBufferReleaseBytesCallback(void *releaseRefCon, const void *baseAdd
     // first draw the image
     CGContextDrawImage(context,bgBoundingBox,pSourceImage);
 
+    NSRect overlayRect = CGRectMake(0, 0, overlay.size.width, overlay.size.height);
     // then mouse cursor
-    CGContextDrawImage(context, cursorRect, [overlay CGImageForProposedRect:NULL context:NULL hints:NULL]);
+    CGContextDrawImage(context, cursorRect, [overlay CGImageForProposedRect:&overlayRect context:NULL hints:NULL]);
     // assuming both the image has been drawn then create an Image Ref for that
 
     CGImageRef pFinalImage = CGBitmapContextCreateImage(context);
