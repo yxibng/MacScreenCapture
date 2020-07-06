@@ -33,7 +33,7 @@
     [super viewDidLoad];
     _taskQueue = dispatch_queue_create("queue", DISPATCH_QUEUE_SERIAL);
     _windowID = kCGNullWindowID;
-    _windowID = 52439;
+    _windowID = 188544;
     [self startTimer];
 }
 
@@ -106,7 +106,7 @@
 //
 //
 //
-//    NSLog(@"window image = %@, rect = %@",windowImage, NSStringFromRect(rect));
+    NSLog(@"window image = %@, rect = %@",windowImage, NSStringFromRect(rect));
 
     
     //追加光标， 参考 https://www.coder.work/article/1297008
@@ -298,17 +298,20 @@ CGImageRef CreateScaledCGImage(CGImageRef image, int width, int height) {
 -(CGImageRef)appendMouseCursor:(CGImageRef)pSourceImage sourceImageRect:(CGRect)imageRect {
     // get the cursor image
     
-    
-    
     if (!pSourceImage) {
         return NULL;
     }
     
-    CGEventRef event = CGEventCreate(NULL);
-    CGPoint mouseLoc = CGEventGetLocation(event);
-    CFRelease(event);
-    
+    //imageRect 坐标在左上角， 转换为左下角
+    CGRect imageRect_BottomLeft = imageRect;
+    CGFloat y = NSMaxY(NSScreen.mainScreen.frame) - CGRectGetMaxY(imageRect);
+    imageRect_BottomLeft.origin.y = y;
 
+    //坐标在左下角
+    CGPoint mouseLoc = [NSEvent mouseLocation];
+    
+    NSLog(@"mouse location = %@", NSStringFromPoint(mouseLoc));
+    
     // get the mouse image
     NSImage *overlay = [[NSCursor currentSystemCursor] image];
     
@@ -319,22 +322,17 @@ CGImageRef CreateScaledCGImage(CGImageRef image, int width, int height) {
         NSLog(@"should scale");
     }
     
-    CGFloat y = NSMaxY(NSScreen.screens.firstObject.frame) - mouseLoc.y;
-    CGRect mouseRect = CGRectMake(mouseLoc.x, y, overlay.size.width, overlay.size.height);
+    CGRect mouseRect = CGRectMake(mouseLoc.x,  mouseLoc.y, overlay.size.width, overlay.size.height);
     
-    if (!CGRectContainsPoint(imageRect, mouseRect.origin)) {
+    if (!CGRectContainsRect(imageRect_BottomLeft, mouseRect)) {
         CFRetain(pSourceImage);
         return pSourceImage;
     }
     
-    CGPoint convertedPoint = CGPointMake(mouseRect.origin.x - imageRect.origin.x, mouseRect.origin.y - imageRect.origin.y);
+    CGPoint convertedPoint = CGPointMake(mouseRect.origin.x - imageRect_BottomLeft.origin.x, mouseRect.origin.y - imageRect_BottomLeft.origin.y);
 
     CGRect cursorRect = CGRectMake(convertedPoint.x, convertedPoint.y, overlay.size.width, overlay.size.height);
-    
-    NSLog(@"mouseloc = %@", NSStringFromPoint(mouseLoc));
-    NSLog(@"imageRect = %@", NSStringFromRect(imageRect));
-    NSLog(@"cursorRect = %@", NSStringFromRect(cursorRect));
-    
+        
     size_t height = CGImageGetHeight(pSourceImage);
     size_t width =  CGImageGetWidth(pSourceImage);
     int bytesPerRow = (int)CGImageGetBytesPerRow(pSourceImage);

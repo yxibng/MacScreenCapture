@@ -7,6 +7,7 @@
 //
 
 #import "DbyVideoCapturer.h"
+#import <AppKit/AppKit.h>
 
 @interface DbyVideoCapturer ()<AVCaptureVideoDataOutputSampleBufferDelegate>
 @property (nonatomic, strong) AVCaptureSession *session;
@@ -41,8 +42,19 @@
     
     [self.session beginConfiguration];
     
-    AVCaptureScreenInput *input = [[AVCaptureScreenInput alloc] initWithDisplayID:CGMainDisplayID()];
+    AVCaptureScreenInput *input = [[AVCaptureScreenInput alloc] initWithDisplayID:0];
     input.capturesMouseClicks = YES;
+    
+    //坐标在左下角， 但是目标是从左上角开始裁剪，因此需要做一个转换
+    CGRect sourceRect = CGRectZero;
+    CGRect screenRect = NSScreen.mainScreen.frame;
+    CGFloat y = CGRectGetMaxY(screenRect) - CGRectGetMaxY(sourceRect);
+    
+    CGRect targetRect = sourceRect;
+    targetRect.origin.y = y;
+    
+    input.cropRect = CGRectZero;
+    input.minFrameDuration = CMTimeMake(1, 15);
     if ([self.session canAddInput:input]) {
         [self.session addInput:input];
     } else {
