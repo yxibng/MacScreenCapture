@@ -33,7 +33,7 @@
     [super viewDidLoad];
     _taskQueue = dispatch_queue_create("queue", DISPATCH_QUEUE_SERIAL);
     _windowID = kCGNullWindowID;
-    _windowID = 188544;
+    _windowID = 191390;
     [self startTimer];
 }
 
@@ -97,39 +97,20 @@
         return;
     }
     
-//    NSImage * cursor = [NSCursor currentCursor].image;
-//
-//    NSPoint point = NSEvent.mouseLocation;
-//
-//
-//
-//
-//
-//
-    NSLog(@"window image = %@, rect = %@",windowImage, NSStringFromRect(rect));
-
-    
     //追加光标， 参考 https://www.coder.work/article/1297008
     CGImageRef imagWithCursor = [self appendMouseCursor:windowImage sourceImageRect:rect];
     CFRelease(windowImage);
     if (!imagWithCursor) {
         return;
     }
-
-    
-    
     
     //做裁切
-    CGImageRef croppedImage = CGImageCreateWithImageInRect(imagWithCursor, CGRectInfinite);
+    CGRect cropRect = CGRectMake(0, 0, 640, 480);
+    CGImageRef croppedImage = CGImageCreateWithImageInRect(imagWithCursor, cropRect);
     CFRelease(imagWithCursor);
     if (!croppedImage) {
         return;
     }
-    
-//    //写文件
-//    static int index = 0;
-//    [self writeImageWithIndex:index image:croppedImage];
-//    index++;
     //转化为 buffer 并展示
     CVPixelBufferRef buffer = [self pixelBufferFromCGImage:croppedImage];
     [self.videoView displayPixelBuffer:buffer];
@@ -137,19 +118,14 @@
     CFRelease(croppedImage);
 }
 
-
-
-
-
+//将图片写为文件
 - (void)writeImageWithIndex:(NSInteger)index image:(CGImageRef)image
 {
     NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
     NSLog(@"%@",path);
     path = [path stringByAppendingFormat:@"/%ld.png", (long)index];
     CGImageWriteToFile(image, path);
-
 }
-
 
 
 BOOL CGImageWriteToFile(CGImageRef image, NSString *path) {
@@ -174,7 +150,7 @@ BOOL CGImageWriteToFile(CGImageRef image, NSString *path) {
 
 
 
-- (CVPixelBufferRef) pixelBufferFromCGImage: (CGImageRef) image
+- (CVPixelBufferRef)pixelBufferFromCGImage: (CGImageRef) image
 {
     NSCParameterAssert(NULL != image);
     size_t originalWidth = CGImageGetWidth(image);
