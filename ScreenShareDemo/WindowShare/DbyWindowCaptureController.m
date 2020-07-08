@@ -24,30 +24,27 @@
 @property (weak) IBOutlet DbyBufferVideoView *videoView;
 @property (nonatomic) dispatch_source_t timer;
 @property (nonatomic) dispatch_queue_t taskQueue;
-@property (nonatomic) CGWindowID windowID;
+
 @end
 
 @implementation DbyWindowCaptureController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    _taskQueue = dispatch_queue_create("queue", DISPATCH_QUEUE_SERIAL);
-    _windowID = kCGNullWindowID;
-    _windowID = 191390;
-    [self startTimer];
-}
-
-
-- (void)start
-{
-    [self startTimer];
-}
-
-- (void)stop
+- (void)dealloc
 {
     [self stopTimer];
 }
 
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    _taskQueue = dispatch_queue_create("queue", DISPATCH_QUEUE_SERIAL);
+    [self startTimer];
+}
+
+- (void)viewWillDisappear {
+    [super viewWillDisappear];
+    [self stopTimer];
+}
 
 
 - (void)startTimer
@@ -285,9 +282,7 @@ CGImageRef CreateScaledCGImage(CGImageRef image, int width, int height) {
 
     //坐标在左下角
     CGPoint mouseLoc = [NSEvent mouseLocation];
-    
-    NSLog(@"mouse location = %@", NSStringFromPoint(mouseLoc));
-    
+        
     // get the mouse image
     NSImage *overlay = [[NSCursor currentSystemCursor] image];
     

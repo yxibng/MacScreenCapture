@@ -66,6 +66,7 @@
 		86488E7D249B33B800A5DD5B /* compare_gcc.cc in Sources */ = {isa = PBXBuildFile; fileRef = 86488E48249B33B800A5DD5B /* compare_gcc.cc */; };
 		86488E7E249B33B800A5DD5B /* compare_neon64.cc in Sources */ = {isa = PBXBuildFile; fileRef = 86488E49249B33B800A5DD5B /* compare_neon64.cc */; };
 		86488E7F249B33B800A5DD5B /* scale_argb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 86488E4A249B33B800A5DD5B /* scale_argb.cc */; };
+		86959AA324B59DD4001E2DFB /* DbyEnterWindowIDController.m in Sources */ = {isa = PBXBuildFile; fileRef = 86959AA224B59DD4001E2DFB /* DbyEnterWindowIDController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -157,6 +158,8 @@
 		86488E4A249B33B800A5DD5B /* scale_argb.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = scale_argb.cc; sourceTree = "<group>"; };
 		86488E4B249B33B800A5DD5B /* macros_msa.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = macros_msa.h; sourceTree = "<group>"; };
 		86488E4C249B33B800A5DD5B /* row.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = row.h; sourceTree = "<group>"; };
+		86959AA124B59DD4001E2DFB /* DbyEnterWindowIDController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DbyEnterWindowIDController.h; sourceTree = "<group>"; };
+		86959AA224B59DD4001E2DFB /* DbyEnterWindowIDController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DbyEnterWindowIDController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -221,6 +224,8 @@
 				86488DFC249A0E5E00A5DD5B /* DbyBufferVideoView.m */,
 				86488E00249A107D00A5DD5B /* DbyWindowCaptureController.h */,
 				86488E01249A107D00A5DD5B /* DbyWindowCaptureController.m */,
+				86959AA124B59DD4001E2DFB /* DbyEnterWindowIDController.h */,
+				86959AA224B59DD4001E2DFB /* DbyEnterWindowIDController.m */,
 			);
 			path = WindowShare;
 			sourceTree = "<group>";
@@ -388,6 +393,7 @@
 				86488E64249B33B800A5DD5B /* row_common.cc in Sources */,
 				86488E58249B33B800A5DD5B /* row_neon.cc in Sources */,
 				86488E5E249B33B800A5DD5B /* compare_msa.cc in Sources */,
+				86959AA324B59DD4001E2DFB /* DbyEnterWindowIDController.m in Sources */,
 				86488E6B249B33B800A5DD5B /* rotate_mmi.cc in Sources */,
 				86488E79249B33B800A5DD5B /* scale_mmi.cc in Sources */,
 				86488E6D249B33B800A5DD5B /* convert_to_argb.cc in Sources */,

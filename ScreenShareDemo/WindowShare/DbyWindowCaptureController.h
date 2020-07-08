@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DbyWindowCaptureController : NSViewController
-
+@property (nonatomic) CGWindowID windowID;
 @end
 
 NS_ASSUME_NONNULL_END

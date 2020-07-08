@@ -10,13 +10,16 @@ import Cocoa
 
 class ViewController: NSViewController {
 
+    deinit {
+        self.capturer.stop()
+    }
+    
     lazy var capturer: DbyVideoCapturer = DbyVideoCapturer.init(delegate: self)
     
     @IBOutlet weak var videoView: DbyPreviewVideoView!
     override func viewDidLoad() {
         super.viewDidLoad()
         capturer.start()
-        
     }
 
     override var representedObject: Any? {
@@ -24,10 +27,7 @@ class ViewController: NSViewController {
         // Update the view, if already loaded.
         }
     }
-
-
 }
-
 
 extension ViewController: DbyVideoCapturerDelegate {
     func videoCapturer(_ capturer: DbyVideoCapturer, didReceive sampleBuffer: CMSampleBuffer) {
@@ -44,7 +44,7 @@ extension ViewController: DbyVideoCapturerDelegate {
     }
     
     func videoCapturer(_ capturer: DbyVideoCapturer, didReceive pixelBuffer: CVPixelBuffer) {
-        print(pixelBuffer)
+        //print(pixelBuffer)
     }
     
 }
