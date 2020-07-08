@@ -180,8 +180,10 @@ BOOL CGImageWriteToFile(CGImageRef image, NSString *path) {
     CVPixelBufferLockBaseAddress(buffer, 0);
     int width = CVPixelBufferGetWidth(buffer);
     int height = CVPixelBufferGetHeight(buffer);
-    
-    
+        
+    //防止出现绿边
+    height = height - height%2;
+
     CVPixelBufferRef i420Buffer;
     CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_420YpCbCr8Planar, (__bridge CFDictionaryRef _Nullable)att,&i420Buffer);
     CVPixelBufferLockBaseAddress(i420Buffer, 0);
