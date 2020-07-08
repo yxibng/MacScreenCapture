@@ -102,7 +102,8 @@
     }
     
     //做裁切
-    CGRect cropRect = CGRectMake(0, 0, 640, 480);
+    CGRect cropRect = CGRectInfinite;
+//    cropRect = CGRectMake(0, 0, 640, 360);
     CGImageRef croppedImage = CGImageCreateWithImageInRect(imagWithCursor, cropRect);
     CFRelease(imagWithCursor);
     if (!croppedImage) {
