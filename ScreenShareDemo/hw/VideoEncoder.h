@@ -59,7 +59,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)stop;
 
 - (BOOL)encode:(CMSampleBufferRef)buffer forceKeyFrame:(BOOL)forceKeyFrame;
-- (BOOL)adjustBitRate:(NSInteger)bitRate;
+- (OSStatus)adjustBitRate:(NSInteger)bitRate;
 
 
 @end
