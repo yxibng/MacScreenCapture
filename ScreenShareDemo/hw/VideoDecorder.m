@@ -176,11 +176,11 @@ static void decodeOutputDataCallback(void *decompressionOutputRefCon, void *sour
     //VTdecodeFrameFlags 0 为允许多线程解码
     VTDecodeFrameFlags flags =0;
     VTDecodeInfoFlags flagsOut = 0;
-    //解码
-    status = VTDecompressionSessionDecodeFrame(self.deocderSession,
+    //解码,这里第四个参数会传到解码的callback里的sourceFrameRefCon，可为空
+    status = VTDecompressionSessionDecodeFrame(self.decoderSession,
                                                sampleBuffer,
-                                               false,
-                                               (__bridge void * _Nullable)(self),
+                                               flags,
+                                               NULL,
                                                &flagsOut);
     if (status == kVTInvalidSessionErr) {
         NSLog(@"H264Decoder::Invalid session, reset decoder session");
