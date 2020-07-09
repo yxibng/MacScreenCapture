@@ -151,9 +151,9 @@ BOOL CGImageWriteToFile(CGImageRef image, NSString *path) {
 - (CVPixelBufferRef)pixelBufferFromCGImage: (CGImageRef) image
 {
     NSCParameterAssert(NULL != image);
-    size_t originalWidth = CGImageGetWidth(image);
-    size_t originalHeight = CGImageGetHeight(image);
-    
+    size_t originalWidth = CGImageGetWidth(image) & (~1);
+    size_t originalHeight = CGImageGetHeight(image)& (~1);
+ 
     if (originalWidth == 0 || originalHeight == 0) {
         return NULL;
     }
@@ -179,12 +179,10 @@ BOOL CGImageWriteToFile(CGImageRef image, NSString *path) {
     
     
     CVPixelBufferLockBaseAddress(buffer, 0);
-    int width = CVPixelBufferGetWidth(buffer);
-    int height = CVPixelBufferGetHeight(buffer);
-        
-    //防止出现绿边
-    height = height - height%2;
+    int width = (int)CVPixelBufferGetWidth(buffer);
+    int height = (int)CVPixelBufferGetHeight(buffer);
 
+    
     CVPixelBufferRef i420Buffer;
     CVPixelBufferCreate(kCFAllocatorDefault, width, height, kCVPixelFormatType_420YpCbCr8Planar, (__bridge CFDictionaryRef _Nullable)att,&i420Buffer);
     CVPixelBufferLockBaseAddress(i420Buffer, 0);
@@ -194,13 +192,13 @@ BOOL CGImageWriteToFile(CGImageRef image, NSString *path) {
     void *v_frame = CVPixelBufferGetBaseAddressOfPlane(i420Buffer, 2);
 
     
-    int stride_y = CVPixelBufferGetBytesPerRowOfPlane(i420Buffer, 0);
-    int stride_u = CVPixelBufferGetBytesPerRowOfPlane(i420Buffer, 1);
-    int stride_v = CVPixelBufferGetBytesPerRowOfPlane(i420Buffer, 2);
+    int stride_y = (int)CVPixelBufferGetBytesPerRowOfPlane(i420Buffer, 0);
+    int stride_u = (int)CVPixelBufferGetBytesPerRowOfPlane(i420Buffer, 1);
+    int stride_v = (int)CVPixelBufferGetBytesPerRowOfPlane(i420Buffer, 2);
     
     
     void *rgb = CVPixelBufferGetBaseAddressOfPlane(buffer, 0);
-    void *rgb_stride = CVPixelBufferGetBytesPerRow(buffer);
+    int rgb_stride = (int)CVPixelBufferGetBytesPerRow(buffer);
     
     
     ARGBToI420(rgb, rgb_stride,
@@ -223,32 +221,6 @@ void _CVPixelBufferReleaseBytesCallback(void *releaseRefCon, const void *baseAdd
     
 }
 
-
-- (void)printWindowInfo
-{
-    CFArrayRef windowList = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, self.windowID);
-    NSArray *array = (__bridge NSArray*)windowList;
-    
-    for (id window in array) {
-        NSLog(@"%@",window);
-    }
-    
-    CFIndex count = CFGetRetainCount(windowList);
-    if (count == 0) {
-        CFRelease(windowList);
-        return;
-    }
-    
-    CFDictionaryRef windowInfo = CFArrayGetValueAtIndex(windowList, 0);
-    CFDictionaryRef boundsInfo = CFDictionaryGetValue(windowInfo, kCGWindowBounds);
-    
-    CGRect rect;
-    bool ret = CGRectMakeWithDictionaryRepresentation(boundsInfo, &rect);
-    NSLog(@"x = %f, y = %f, width = %f, height = %f", rect.origin.x, rect.origin.y, rect.size.width, rect.size.height );
-    
-    CFRetain(windowList);
-    
-}
 
 CGImageRef CreateScaledCGImage(CGImageRef image, int width, int height) {
   // Create context, keeping original image properties.
@@ -288,13 +260,6 @@ CGImageRef CreateScaledCGImage(CGImageRef image, int width, int height) {
         
     // get the mouse image
     NSImage *overlay = [[NSCursor currentSystemCursor] image];
-    
-    CGImageRef overlayImage = [overlay CGImageForProposedRect:NULL
-                                                      context:nil hints:nil];
-    
-    if (CGImageGetWidth(overlayImage) != (size_t)overlay.size.width) {
-        NSLog(@"should scale");
-    }
     
     CGRect mouseRect = CGRectMake(mouseLoc.x,  mouseLoc.y, overlay.size.width, overlay.size.height);
     

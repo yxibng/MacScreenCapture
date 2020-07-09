@@ -67,6 +67,8 @@
 		86488E7E249B33B800A5DD5B /* compare_neon64.cc in Sources */ = {isa = PBXBuildFile; fileRef = 86488E49249B33B800A5DD5B /* compare_neon64.cc */; };
 		86488E7F249B33B800A5DD5B /* scale_argb.cc in Sources */ = {isa = PBXBuildFile; fileRef = 86488E4A249B33B800A5DD5B /* scale_argb.cc */; };
 		86959AA324B59DD4001E2DFB /* DbyEnterWindowIDController.m in Sources */ = {isa = PBXBuildFile; fileRef = 86959AA224B59DD4001E2DFB /* DbyEnterWindowIDController.m */; };
+		86959AA724B709B8001E2DFB /* VideoEncoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 86959AA624B709B8001E2DFB /* VideoEncoder.m */; };
+		86959AAA24B709C8001E2DFB /* VideoDecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = 86959AA924B709C8001E2DFB /* VideoDecorder.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -160,6 +162,10 @@
 		86488E4C249B33B800A5DD5B /* row.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = row.h; sourceTree = "<group>"; };
 		86959AA124B59DD4001E2DFB /* DbyEnterWindowIDController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DbyEnterWindowIDController.h; sourceTree = "<group>"; };
 		86959AA224B59DD4001E2DFB /* DbyEnterWindowIDController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DbyEnterWindowIDController.m; sourceTree = "<group>"; };
+		86959AA524B709B8001E2DFB /* VideoEncoder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoEncoder.h; sourceTree = "<group>"; };
+		86959AA624B709B8001E2DFB /* VideoEncoder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoEncoder.m; sourceTree = "<group>"; };
+		86959AA824B709C8001E2DFB /* VideoDecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VideoDecorder.h; sourceTree = "<group>"; };
+		86959AA924B709C8001E2DFB /* VideoDecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = VideoDecorder.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +198,7 @@
 		86488DE12499AB7C00A5DD5B /* ScreenShareDemo */ = {
 			isa = PBXGroup;
 			children = (
+				86959AA424B7099B001E2DFB /* hw */,
 				86488DE22499AB7C00A5DD5B /* AppDelegate.swift */,
 				86488DE42499AB7C00A5DD5B /* ViewController.swift */,
 				86488E03249B33B800A5DD5B /* libyuv */,
@@ -317,6 +324,17 @@
 			path = libyuv;
 			sourceTree = "<group>";
 		};
+		86959AA424B7099B001E2DFB /* hw */ = {
+			isa = PBXGroup;
+			children = (
+				86959AA524B709B8001E2DFB /* VideoEncoder.h */,
+				86959AA624B709B8001E2DFB /* VideoEncoder.m */,
+				86959AA824B709C8001E2DFB /* VideoDecorder.h */,
+				86959AA924B709C8001E2DFB /* VideoDecorder.m */,
+			);
+			path = hw;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -390,6 +408,7 @@
 			files = (
 				86488E5F249B33B800A5DD5B /* planar_functions.cc in Sources */,
 				86488E6E249B33B800A5DD5B /* compare_neon.cc in Sources */,
+				86959AA724B709B8001E2DFB /* VideoEncoder.m in Sources */,
 				86488E64249B33B800A5DD5B /* row_common.cc in Sources */,
 				86488E58249B33B800A5DD5B /* row_neon.cc in Sources */,
 				86488E5E249B33B800A5DD5B /* compare_msa.cc in Sources */,
@@ -436,6 +455,7 @@
 				86488E4D249B33B800A5DD5B /* compare_mmi.cc in Sources */,
 				86488E7E249B33B800A5DD5B /* compare_neon64.cc in Sources */,
 				86488E5A249B33B800A5DD5B /* scale.cc in Sources */,
+				86959AAA24B709C8001E2DFB /* VideoDecorder.m in Sources */,
 				86488E73249B33B800A5DD5B /* scale_win.cc in Sources */,
 				86488E7F249B33B800A5DD5B /* scale_argb.cc in Sources */,
 				86488E66249B33B800A5DD5B /* rotate_gcc.cc in Sources */,
