@@ -271,7 +271,7 @@ void encodeOutputDataCallback(void * CM_NULLABLE outputCallbackRefCon,
     }
     
     VideoEncoder *encoder = (__bridge VideoEncoder *)(outputCallbackRefCon);
-    const char * header = "\x00\x00\x00\x01";
+    const char header[] = "\x00\x00\x00\x01";
     size_t headerLen = sizeof(header) -1;
     NSData *headerData = [NSData dataWithBytes:header length:headerLen];
     
@@ -300,7 +300,7 @@ void encodeOutputDataCallback(void * CM_NULLABLE outputCallbackRefCon,
         size_t ppsSetSize, ppsSetCount;
         const uint8_t *ppsSet;
         OSStatus ppsStatus = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(formatDescriptionRef,
-                                                                    0,
+                                                                    1,
                                                                     &ppsSet,
                                                                     &ppsSetSize,
                                                                     &ppsSetCount,

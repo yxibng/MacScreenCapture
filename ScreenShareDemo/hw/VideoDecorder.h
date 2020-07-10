@@ -24,6 +24,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface VideoDecorder : NSObject
 
+@property (nonatomic, weak) id<VideoDecorderDelegate>delegate;
+
 - (void)decodeNaluData:(NSData *)naluData;
 
 @end

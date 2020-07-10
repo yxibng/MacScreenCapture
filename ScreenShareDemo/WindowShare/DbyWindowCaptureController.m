@@ -11,6 +11,7 @@
 #import "libyuv.h"
 
 #import "VideoEncoder.h"
+#import "VideoDecorder.h"
 
 
 
@@ -22,13 +23,14 @@
 #define kFrameRate 15
 
 
-@interface DbyWindowCaptureController ()<VideoEncoderDelegate>
+@interface DbyWindowCaptureController ()<VideoEncoderDelegate, VideoDecorderDelegate>
 
 @property (weak) IBOutlet DbyBufferVideoView *videoView;
 @property (nonatomic) dispatch_source_t timer;
 @property (nonatomic) dispatch_queue_t taskQueue;
 
 @property (nonatomic, strong) VideoEncoder *videoEncoder;
+@property (nonatomic, strong) VideoDecorder *videoDecoder;
 
 @property (nonatomic, strong) VideoEncoderParams *params;
 
@@ -52,6 +54,8 @@
     _params.encodeWidth = 0;
     _params.encodeHeight = 0;
     
+    _videoDecoder = [[VideoDecorder alloc] init];
+    _videoDecoder.delegate = self;
     
     
 }
@@ -134,7 +138,7 @@
 
 - (void)didGotPixelBuffer:(CVPixelBufferRef)pixelBuffer
 {
-    [self.videoView displayPixelBuffer:pixelBuffer];
+//    [self.videoView displayPixelBuffer:pixelBuffer];
     //搞一份用来编码
     
     if (!pixelBuffer) {
@@ -184,12 +188,21 @@
 #pragma mark -
 - (void)encoder:(VideoEncoder *)encoder receiveEncodedData:(NSData *)data isKeyFrame:(BOOL)isKeyFrame
 {
-    NSFileHandle *handler = [NSFileHandle fileHandleForWritingAtPath:[self filePath]];
-    [handler seekToEndOfFile];
-    [handler writeData:data];
-    [handler synchronizeFile];
-    [handler closeFile];
+//    NSFileHandle *handler = [NSFileHandle fileHandleForWritingAtPath:[self filePath]];
+//    [handler seekToEndOfFile];
+//    [handler writeData:data];
+//    [handler synchronizeFile];
+//    [handler closeFile];
+    
+    [self.videoDecoder decodeNaluData:data];
+    
 }
+
+
+- (void)decoder:(VideoDecorder *)decoder receiveDecodedBuffer:(CVImageBufferRef)buffer {
+    [self.videoView displayPixelBuffer:buffer];
+}
+
 
 #pragma mark -
 //将图片写为文件

@@ -30,14 +30,10 @@
 //解码回调函数
 static void decodeOutputDataCallback(void *decompressionOutputRefCon, void *sourceFrameRefCon, OSStatus status, VTDecodeInfoFlags infoFlags, CVImageBufferRef pixelBuffer, CMTime presentationTimeStamp, CMTime presentationDuration)
 {
-//    // retain再输出，外层去release
-//    CVPixelBufferRetain(pixelBuffer);
-//    H264Decoder *decoder = (__bridge H264Decoder *)decompressionOutputRefCon;
-//
-//    if ([decoder.delegate respondsToSelector:@selector(videoDecodeOutputDataCallback:)])
-//    {
-//        [decoder.delegate videoDecodeOutputDataCallback:pixelBuffer];
-//    }
+    VideoDecorder *decoder = (__bridge VideoDecorder *)(decompressionOutputRefCon);
+    if ([decoder.delegate respondsToSelector:@selector(decoder:receiveDecodedBuffer:)]) {
+        [decoder.delegate decoder:decoder receiveDecodedBuffer:pixelBuffer];
+    }
 }
 
 
@@ -128,12 +124,13 @@ static void decodeOutputDataCallback(void *decompressionOutputRefCon, void *sour
             _spsSize = frameSize -4;
             _sps = malloc(_spsSize);
             memcpy(_sps, frame + 4, _spsSize);
-            
+            break;
         case 0x08://PPS
             NSLog(@"NSLU type is PPS frame");
             _ppsSize = frameSize -4;
             _pps = malloc(_ppsSize);
             memcpy(_pps, frame + 4, _ppsSize);
+            break;
         default://B帧或者P帧
             NSLog(@"NSLU type is B/P frame");
             if ([self initH264Decoder]) {
