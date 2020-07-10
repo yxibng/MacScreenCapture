@@ -87,19 +87,38 @@
     }
     return YES;
 }
+- (BOOL)reset {
+    
+    [self stop];
+    
+    if (self.compressSession) {
+        VTCompressionSessionCompleteFrames(_compressSession, kCMTimeInvalid);
+        VTCompressionSessionInvalidate(_compressSession);
+        CFRelease(_compressSession);
+        _compressSession = NULL;
+    }
+    
+    [self setupCompressionSession];
+    return YES;
+}
+- (BOOL)encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer forceKeyFrame:(BOOL)forceKeyFrame {
+    if (!sampleBuffer) {
+        return NO;
+    }
+    CVPixelBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    return  [self encodePixelBuffer:pixelBuffer forceKeyFrame:forceKeyFrame];
+}
 
-- (BOOL)encode:(CMSampleBufferRef)buffer forceKeyFrame:(BOOL)forceKeyFrame
+- (BOOL)encodePixelBuffer:(CVImageBufferRef)pixelBuffer forceKeyFrame:(BOOL)forceKeyFrame
 {
     if (!self.compressSession) {
         return NO;
     }
     
-    
-    if (!buffer) {
+    if (!pixelBuffer) {
         return NO;
     }
     
-    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(buffer);
     NSDictionary *frameProperties = @{
         (__bridge NSString *)kVTEncodeFrameOptionKey_ForceKeyFrame: @(forceKeyFrame)
     };
@@ -226,13 +245,124 @@
 }
 
 
-void encodeOutputDataCallback(void * CM_NULLABLE outputCallbackRefCon, void * CM_NULLABLE sourceFrameRefCon, OSStatus status, VTEncodeInfoFlags infoFlags, CM_NULLABLE CMSampleBufferRef sampleBuffer) {
+void encodeOutputDataCallback(void * CM_NULLABLE outputCallbackRefCon,
+                              void * CM_NULLABLE sourceFrameRefCon,
+                              OSStatus status,
+                              VTEncodeInfoFlags infoFlags,
+                              CM_NULLABLE CMSampleBufferRef sampleBuffer)
+{
+        
+    if (status || !sampleBuffer) {
+        NSLog(@"VEVideoEncoder::encodeOutputCallback Error : %d!", (int)status);
+        return;
+    }
     
+    if (!outputCallbackRefCon) {
+        return;
+    }
     
+    if (!CMSampleBufferDataIsReady(sampleBuffer)) {
+        return;
+    }
     
+    if (infoFlags & kVTEncodeInfo_FrameDropped) {
+        NSLog(@"VEVideoEncoder::H264 encode dropped frame.");
+        return;
+    }
     
+    VideoEncoder *encoder = (__bridge VideoEncoder *)(outputCallbackRefCon);
+    const char * header = "\x00\x00\x00\x01";
+    size_t headerLen = sizeof(header) -1;
+    NSData *headerData = [NSData dataWithBytes:header length:headerLen];
     
+    //判断是否是关键帧
+    CFArrayRef attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, TRUE);
+    if (!attachments) {
+        return;
+    }
+    CFDictionaryRef attachment = CFArrayGetValueAtIndex(attachments, 0);
+    Boolean isKeyFrame = !CFDictionaryContainsKey(attachment, kCMSampleAttachmentKey_NotSync);
     
+    if (isKeyFrame) {
+        
+        CMFormatDescriptionRef formatDescriptionRef = CMSampleBufferGetFormatDescription(sampleBuffer);
+        
+        size_t spsSetSize, spsSetCount;
+        const uint8_t *spsSet;
+        OSStatus spsStatus = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(formatDescriptionRef,
+                                                                             0,
+                                                                             &spsSet,
+                                                                             &spsSetSize,
+                                                                             &spsSetCount,
+                                                                             0);
+
+        
+        size_t ppsSetSize, ppsSetCount;
+        const uint8_t *ppsSet;
+        OSStatus ppsStatus = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(formatDescriptionRef,
+                                                                    0,
+                                                                    &ppsSet,
+                                                                    &ppsSetSize,
+                                                                    &ppsSetCount,
+                                                                    0);
+        if (spsStatus == noErr && ppsStatus == noErr) {
+            
+            NSData *sps = [NSData dataWithBytes:spsSet length:spsSetSize];
+            NSData *pps = [NSData dataWithBytes:ppsSet length:ppsSetSize];
+            NSMutableData *spsData = [NSMutableData data];
+            [spsData appendData:headerData];
+            [spsData appendData:sps];
+            //回调 sps
+            if ([encoder.delegate respondsToSelector:@selector(encoder:receiveEncodedData:isKeyFrame:)]) {
+                [encoder.delegate encoder:encoder receiveEncodedData:spsData isKeyFrame:isKeyFrame];
+            }
+            
+            
+            NSMutableData *ppsData = [NSMutableData data];
+            [ppsData appendData:headerData];
+            [ppsData appendData:pps];
+            //回调 pps
+            if ([encoder.delegate respondsToSelector:@selector(encoder:receiveEncodedData:isKeyFrame:)]) {
+                [encoder.delegate encoder:encoder receiveEncodedData:ppsData isKeyFrame:isKeyFrame];
+            }
+        
+        }
+    }
+    
+    CMBlockBufferRef blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer);
+    size_t length, totalLength;
+    char *dataPointer;
+    status = CMBlockBufferGetDataPointer(blockBuffer, 0, &length, &totalLength, &dataPointer);
+    if (status) {
+        NSLog(@"VEVideoEncoder::CMBlockBufferGetDataPointer Error : %d!", (int)status);
+        return;
+    }
+    
+    size_t bufferOffset = 0;
+    static const int avcHeaderLength = 4;
+    while (bufferOffset < totalLength - avcHeaderLength) {
+        
+        //读取 NAL 单元长度
+        uint32_t nalUnitLength = 0;
+        memcpy(&nalUnitLength, dataPointer + bufferOffset, avcHeaderLength);
+        
+        //大端转小端
+        nalUnitLength = CFSwapInt32BigToHost(nalUnitLength);
+        
+        char *pData = dataPointer + bufferOffset + avcHeaderLength;
+        NSData *frameData = [NSData dataWithBytes:pData length:nalUnitLength];
+        
+        NSMutableData *outputFrameData = [NSMutableData data];
+        [outputFrameData appendData:headerData];
+        [outputFrameData appendData:frameData];
+        
+        bufferOffset += avcHeaderLength + nalUnitLength;
+        //回调 视频数据
+        if ([encoder.delegate respondsToSelector:@selector(encoder:receiveEncodedData:isKeyFrame:)]) {
+            [encoder.delegate encoder:encoder receiveEncodedData:outputFrameData isKeyFrame:isKeyFrame];
+        }
+    }
+    return;
 }
 
 @end

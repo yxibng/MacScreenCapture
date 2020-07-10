@@ -19,6 +19,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do view setup here.
+    self.windowIDInput.stringValue = @"241393";
 }
 - (IBAction)displayPreview:(id)sender {
     

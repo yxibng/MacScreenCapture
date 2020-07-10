@@ -12,11 +12,19 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class VideoDecorder;
+@protocol VideoDecorderDelegate <NSObject>
+
+@optional
+
+- (void)decoder:(VideoDecorder *)decoder receiveDecodedBuffer:(CVImageBufferRef)buffer;
+
+@end
+
+
 @interface VideoDecorder : NSObject
 
-
 - (void)decodeNaluData:(NSData *)naluData;
-
 
 @end
 

@@ -147,6 +147,8 @@ static void decodeOutputDataCallback(void *decompressionOutputRefCon, void *sour
 
 - (void)decode:(uint8_t *)frame withSize:(uint32_t)frameSize{
  
+    //TODO: 判断 sps， pps 变更的时候，需要重置解码器
+    
     //创建CMBlockBuffer
     CMBlockBufferRef blockBuffer = NULL;
     

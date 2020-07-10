@@ -48,19 +48,26 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 
+@class VideoEncoder;
+
+@protocol VideoEncoderDelegate <NSObject>
+@optional
+- (void)encoder:(VideoEncoder *)encoder receiveEncodedData:(NSData *)data isKeyFrame:(BOOL)isKeyFrame;
+@end
+
+
 @interface VideoEncoder : NSObject
 
-
 @property (nonatomic, strong) VideoEncoderParams *encoderParams;
-
+@property (nonatomic, weak) id<VideoEncoderDelegate>delegate;
 
 - (instancetype)initWithParams:(VideoEncoderParams *)params;
 - (BOOL)start;
 - (BOOL)stop;
-
-- (BOOL)encode:(CMSampleBufferRef)buffer forceKeyFrame:(BOOL)forceKeyFrame;
+- (BOOL)reset;
+- (BOOL)encodePixelBuffer:(CVPixelBufferRef)pixelBuffer forceKeyFrame:(BOOL)forceKeyFrame;
+- (BOOL)encodeSampleBuffer:(CMSampleBufferRef)sampleBuffer forceKeyFrame:(BOOL)forceKeyFrame;
 - (OSStatus)adjustBitRate:(NSInteger)bitRate;
-
 
 @end
 

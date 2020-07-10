@@ -8,8 +8,11 @@
 
 #import "DbyWindowCaptureController.h"
 #import "DbyBufferVideoView.h"
-
 #import "libyuv.h"
+
+#import "VideoEncoder.h"
+
+
 
 
 
@@ -19,11 +22,17 @@
 #define kFrameRate 15
 
 
-@interface DbyWindowCaptureController ()
+@interface DbyWindowCaptureController ()<VideoEncoderDelegate>
 
 @property (weak) IBOutlet DbyBufferVideoView *videoView;
 @property (nonatomic) dispatch_source_t timer;
 @property (nonatomic) dispatch_queue_t taskQueue;
+
+@property (nonatomic, strong) VideoEncoder *videoEncoder;
+
+@property (nonatomic, strong) VideoEncoderParams *params;
+
+
 
 @end
 
@@ -39,6 +48,12 @@
     [super viewDidLoad];
     _taskQueue = dispatch_queue_create("queue", DISPATCH_QUEUE_SERIAL);
     [self startTimer];
+    _params = [[VideoEncoderParams alloc] init];
+    _params.encodeWidth = 0;
+    _params.encodeHeight = 0;
+    
+    
+    
 }
 
 - (void)viewWillDisappear {
@@ -111,11 +126,72 @@
     }
     //转化为 buffer 并展示
     CVPixelBufferRef buffer = [self pixelBufferFromCGImage:croppedImage];
-    [self.videoView displayPixelBuffer:buffer];
+    [self didGotPixelBuffer:buffer];
     CVPixelBufferRelease(buffer);
     CFRelease(croppedImage);
 }
 
+
+- (void)didGotPixelBuffer:(CVPixelBufferRef)pixelBuffer
+{
+    [self.videoView displayPixelBuffer:pixelBuffer];
+    //搞一份用来编码
+    
+    if (!pixelBuffer) {
+        return;
+    }
+    
+    CVPixelBufferLockBaseAddress(pixelBuffer, 0);
+    int width = CVPixelBufferGetWidth(pixelBuffer);
+    int height = CVPixelBufferGetHeight(pixelBuffer);
+    CVPixelBufferUnlockBaseAddress(pixelBuffer, 0);
+    
+    
+    if (!_videoEncoder) {
+        _videoEncoder = [[VideoEncoder alloc] initWithParams:self.params];
+        _videoEncoder.delegate = self;
+    }
+    
+    if (width != self.params.encodeWidth || width != self.params.encodeHeight) {
+        //需要重新创建编码器
+        self.params.encodeWidth = width;
+        self.params.encodeHeight = height;
+        [self.videoEncoder reset];
+    }
+    
+    [self.videoEncoder encodePixelBuffer:pixelBuffer forceKeyFrame:NO];
+}
+
+
+
+- (NSString *)filePath {
+    
+    
+    NSString *path = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+    path = [path stringByAppendingPathComponent:@"video.h264"];
+    NSLog(@"path = %@", path);
+    
+    if ([[NSFileManager defaultManager] fileExistsAtPath:path]) {
+        return path;
+    }
+    
+    [[NSFileManager defaultManager] createFileAtPath:path contents:nil attributes:nil];
+    return path;
+    
+}
+
+
+#pragma mark -
+- (void)encoder:(VideoEncoder *)encoder receiveEncodedData:(NSData *)data isKeyFrame:(BOOL)isKeyFrame
+{
+    NSFileHandle *handler = [NSFileHandle fileHandleForWritingAtPath:[self filePath]];
+    [handler seekToEndOfFile];
+    [handler writeData:data];
+    [handler synchronizeFile];
+    [handler closeFile];
+}
+
+#pragma mark -
 //将图片写为文件
 - (void)writeImageWithIndex:(NSInteger)index image:(CGImageRef)image
 {
