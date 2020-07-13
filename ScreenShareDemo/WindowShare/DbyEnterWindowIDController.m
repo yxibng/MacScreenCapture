@@ -9,33 +9,35 @@
 #import "DbyEnterWindowIDController.h"
 #import "DbyWindowCaptureController.h"
 
+
 @interface DbyEnterWindowIDController ()
 @property (weak) IBOutlet NSTextField *windowIDInput;
 
 @end
 
+
 @implementation DbyEnterWindowIDController
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
     // Do view setup here.
-    self.windowIDInput.stringValue = @"246480";
+    self.windowIDInput.stringValue = @"269220";
 }
-- (IBAction)displayPreview:(id)sender {
-    
+- (IBAction)displayPreview:(id)sender
+{
     NSString *wid = _windowIDInput.stringValue;
-    
+
     if (!wid.length) {
         return;
     }
-    
-    CGWindowID windowId = [wid integerValue];
-    NSStoryboard *storyBoard =  [NSStoryboard storyboardWithName:@"Main" bundle:nil];
+
+    CGWindowID windowId = (CGWindowID)[wid integerValue];
+    NSStoryboard *storyBoard = [NSStoryboard storyboardWithName:@"Main" bundle:nil];
     DbyWindowCaptureController *viewcontroller = [storyBoard instantiateControllerWithIdentifier:@"DbyWindowCaptureController"];
     viewcontroller.windowID = windowId;
     NSWindow *window = [NSWindow windowWithContentViewController:viewcontroller];
     [window makeKeyAndOrderFront:nil];
-    
 }
 
 @end
